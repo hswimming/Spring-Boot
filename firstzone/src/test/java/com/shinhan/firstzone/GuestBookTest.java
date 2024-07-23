@@ -1,0 +1,203 @@
+package com.shinhan.firstzone;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.IntStream;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.shinhan.firstzone.repository.GuestBookRepository;
+import com.shinhan.firstzone.service.GuestBookService;
+import com.shinhan.firstzone.vo2.GuestBookDTO;
+import com.shinhan.firstzone.vo2.GuestBookEntity;
+import com.shinhan.firstzone.vo2.QGuestBookEntity;
+
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
+@SpringBootTest
+public class GuestBookTest {
+	@Autowired
+	GuestBookRepository gRepo;
+	
+	@Autowired
+	GuestBookService gService;
+	
+	@Test
+	void f5() {
+		String type = "tcw"; // t -> title / c -> content / w -> writer / tc -> title, content / tcw -> title, content, writer
+		String keyword = "요일";
+		
+		// String[] arr = type.split("");
+		// System.out.println(Arrays.toString(arr));
+		
+		BooleanBuilder builder = new BooleanBuilder();
+		QGuestBookEntity entity = QGuestBookEntity.guestBookEntity;
+		
+		BooleanExpression expression = entity.gno.gt(0L); // gno > 0
+		builder.and(expression); // select b from GuestBookEntity b where b.gno > 0
+		
+		BooleanBuilder builder2 = new BooleanBuilder();
+		
+		if (type.contains("t")) { // 들어온 문자에 t가 있는지 확인 후 문장 만들기
+			builder2.or(entity.title.contains(keyword));
+		}
+		
+		if (type.contains("c")) { // 들어온 문자에 c가 있는지 확인 후 문장 만들기
+			builder2.or(entity.content.contains(keyword));
+		}
+		
+		if (type.contains("w")) { // 들어온 문자에 w가 있는지 확인 후 문장 만들기
+			builder2.or(entity.writer.contains(keyword));
+		}
+		
+		builder.and(builder2); // 만든 문장 붙이기 -> and (title like ? or content like ? or writer like ?)
+		System.out.println(builder);
+		
+		gRepo.findAll(builder).forEach(aa -> {
+			log.info(aa);
+		});
+	}
+	
+	// @Test
+	void f4() {
+		// 동적 SQL 사용
+		String aa = "요일";
+		String bb = "사용자2";
+		
+		BooleanBuilder builder = new BooleanBuilder();
+		
+		// select * from GuestBookEntity
+		QGuestBookEntity book = QGuestBookEntity.guestBookEntity;
+		
+		// where title like '%요일%' and writer = '작성자2' and gno > 0
+		builder.and(book.title.like("%" + aa + "%"));
+		builder.and(book.writer.eq(bb));
+		builder.and(book.gno.gt(0L));
+		
+		System.out.println(builder);
+		
+		gRepo.findAll(builder).forEach(entity -> {
+			log.info(entity);
+		});
+	}
+	
+	// @Test
+	void f3() {
+		// 전체 조회
+		List<GuestBookDTO> list = gService.readAll();
+		
+		list.forEach(dto -> log.info(dto));
+	}
+	
+	// @Test
+	void f2() {
+		// Entity -> DTO
+		GuestBookEntity entity = gRepo.findById(20L).orElse(null);
+		
+		if (entity != null) { // DB에서 가져왔다면
+			GuestBookDTO dto = GuestBookDTO.builder()
+										  .gno(entity.getGno())
+										  .title(entity.getTitle())
+										  .content(entity.getContent())
+										  .writer(entity.getWriter())
+										  .regDate(entity.getRegDate())
+										  .modDate(entity.getModDate())
+										  .build();
+			
+			log.info(dto);
+		}
+	}
+	
+	// @Test
+	void t1() {
+		// DTO -> Entity
+		GuestBookDTO dto = GuestBookDTO.builder()
+									  .gno(1L)
+									  .title("타이틀")
+									  .content("내용")
+									  .writer("작성자")
+									  .build();
+		
+		// 들어온 DTO를 entity로 변환
+		GuestBookEntity entity = GuestBookEntity.builder()
+											.title(dto.getTitle())
+											.content(dto.getContent())
+											.writer(dto.getWriter())
+											.build();
+		
+		gRepo.save(entity); // DB에 저장
+	}
+	
+	// @Test
+	void nullSelect4() {
+		// 등록일이 null 이면서 bno > 10
+		gRepo.findByRegDateIsNull4(10L).forEach(entity -> {
+			log.info(entity);
+		});
+	}
+	
+	// @Test
+	void nullSelect3() {
+		// 등록일이 null인 data 조회 (@Query, nativeQuery)
+		gRepo.findByRegDateIsNull2().forEach(entity -> {
+			log.info(entity);
+		});
+	}
+	
+	// @Test
+	void nullSelect2() {
+		// 등록일이 null인 data 조회 (@Query)
+		gRepo.findByRegDateIsNull3().forEach(entity -> {
+			log.info(entity);
+		});
+	}
+	
+	// @Test
+	void nullSelect() {
+		// 등록일이 null인 data 조회
+		gRepo.findByRegDateIsNull().forEach(entity -> {
+			log.info(entity);
+		});
+	}
+	
+	// @Test
+	void select() {
+		// 전체 조회
+		gRepo.findAll().forEach(entity -> {
+			log.info(entity); // 값 전부 가져오기
+		});
+	}
+	
+	// @Test
+	void insert() {
+		// 입력
+		IntStream.rangeClosed(16, 20).forEach(i -> {
+			GuestBookEntity entity = GuestBookEntity.builder()
+												.title("**화요일**" + i)
+												.content("$$배고파$$")
+												.writer("사용자" + i)
+												.build(); // AllArgs 생성자를 통해 생성
+			
+			gRepo.save(entity);
+		});
+	}
+	
+	/*
+	@Test
+	void insert() {
+		IntStream.rangeClosed(1, 5).forEach(new IntConsumer() { // 원래 작성하는 형태
+			
+			@Override
+			public void accept(int value) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+	}
+	*/
+}
