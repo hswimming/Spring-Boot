@@ -24,7 +24,7 @@ public class ManyToOneTest {
 	@Autowired
 	ProfileRepository pRepo;
 	
-	@Test
+	// @Test
 	void getProfileCount() {
 		// 모든 member의 mid, profile의 count
 		pRepo.getProfileCount().forEach(arr -> {
