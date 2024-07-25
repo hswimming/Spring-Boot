@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+<!-- layout1.html 파일 내부의 contentParam 값으로 들어간다. -->
+<th:block th:replace="~{/layout/layout1 :: setContent(~{this::contentName} )}">
+<th:block th:fragment="contentName">
+		<h1>아무도 이름을 정해주지 않아요</h1>
+		<h2 th:text="${menu}">메뉴</h2>
+		<h3 th:text="${member.mname}">이름</h3>
+		
+		<h2 th:text="${'<h1>' + menu + '</h1>'}">메뉴이름-text</h2> <!-- HTML 태그가 문자로 출력 -->
+		<h2 th:utext="${'<h1>' + menu + '</h1>'}">메뉴이름-utext</h2> <!-- HTML 태그가 동작 -->
+		
+		<h3>inline 방식 : ${member.mid}</h3>
+		<h3>inline 방식 : [[${member.mid}]]</h3>
+</th:block>
+</th:block>
+</body>
+</html>

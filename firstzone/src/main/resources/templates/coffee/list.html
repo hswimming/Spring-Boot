@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Board list</title>
+</head>
+<body>
+<th:block th:replace="~{/layout/basicLayout :: setContent(~{this::contentName} )}">
+<th:block th:fragment="contentName">
+	<h1>FreeBoard List</h1>
+	<h2>세션 읽기 : [[${session.loginUser.mname}]]</h2>
+	<h2>파라미터 읽기 : [[${param.keyword}]]</h2>
+	<a th:href="@{/coffee/page1}">절대경로</a>
+	<a th:href="@{http://localhost:9999/coffee/page1}">절대경로</a>
+	<a th:href="@{page1}">상대경로</a>
+	<a th:href="@{~/coffee/page1}">다른 app</a>
+	<a th:href="@{page1(myname=swimming)}">파라미터 전달</a>
+	<table border="1" th:with="myuser='user3'"> <!-- th:with 지역변수 사용 -->
+		<tr>
+			<th>순서</th>
+			<th>bno</th>
+			<th>title</th>
+			<th>content</th>
+			<th>writer</th>
+			<th>writer2</th>
+			<th>작성일</th>
+			<th>수정일</th>
+		</tr>
+		<tr th:each="board, bStatus:${blist}"> <!-- blist를 읽어서 한 건을 찍음 -->
+			<td>[[${bStatus.count}]]</td>
+			<td>
+				<a th:href="@{detail(bno=${board.bno})}">[[${board.bno}]]</a>
+			</td>
+			<td>[[${board.title}]]</td>
+			<td>[[${board.writer}]]</td>
+			<td th:text="${board.writer == myuser ? '3번' : '기타'}"></td>
+			<td>[[${board.content}]]</td>
+			<td>[[${#dates.format(board.regdate, 'yyyy-mm-dd')}]]</td>
+			<td>[[${board.updatedate}]]</td>
+		</tr>
+	</table>
+	
+	<script th:inline="javascript">
+		// blist 있을 경우 넣고, 없을 경우 [] -> 현재 배열이기 때문에 빈 배열로 작성, 기본 {}
+		// entity에서 연관관계가 있을 경우
+		var boardList = /*[[${blist}]]*/ []; // 주석 띄어쓰기 주의
+		console.log(boardList);
+	</script>
+</th:block>
+</th:block>
+</body>
+</html>
