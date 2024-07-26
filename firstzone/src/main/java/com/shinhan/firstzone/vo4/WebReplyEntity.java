@@ -44,6 +44,10 @@ public class WebReplyEntity {
 	private Timestamp updatedate;
 	
 	// 하나의 게시글에 댓글이 여러개 있음 (자식)
-	@ManyToOne(fetch = FetchType.EAGER) // EAGER : 즉시 로딩 / LAZY : 지연 로딩
+	@ManyToOne(fetch = FetchType.LAZY) // EAGER : 즉시 로딩 / LAZY : 지연 로딩
 	private WebBoardEntity board; // DB 칼럼 => board_bno(참조 키) (many 즉, 자식쪽에 생성됨)
+	
+	// @ManyToOne(fetch = FetchType.EAGER) 주의!!!!
+	// 댓글 조회 board 옴, 댓글 지울 때 board 조사, ** 삭제 불가 **
+	// 삭제하기 위해서는 LAZY 상태여야 가능
 }

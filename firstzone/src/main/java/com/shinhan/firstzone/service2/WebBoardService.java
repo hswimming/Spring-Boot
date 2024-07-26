@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
+import com.shinhan.firstzone.paging.PageRequestDTO;
+import com.shinhan.firstzone.paging.PageResultDTO;
 import com.shinhan.firstzone.vo2.MemberEntity;
 import com.shinhan.firstzone.vo4.QWebBoardEntity;
 import com.shinhan.firstzone.vo4.WebBoardDTO;
@@ -17,6 +19,8 @@ public interface WebBoardService {
 	
 	// 2. 조회
 	List<WebBoardDTO> getList();
+	PageResultDTO<WebBoardDTO, WebBoardEntity> getList(PageRequestDTO pageRequestDTO);
+	
 	WebBoardDTO selectById(Long bno); // 상세 조회
 	
 	// 3. 수정
@@ -27,6 +31,7 @@ public interface WebBoardService {
 	
 	// 인터페이스는 함수 정의만, 구현 X -> default method
 	
+	// insert, update 시 사용
 	// DTO -> Entity (DB 반영하기 위함)
 	default WebBoardEntity dtoToEntity(WebBoardDTO dto) {
 		MemberEntity member = MemberEntity.builder().mid(dto.getMid()).build();
@@ -41,6 +46,7 @@ public interface WebBoardService {
 		return entity;
 	}
 	
+	// select 시 사용 (조회)
 	// Entity -> DTO (Data 전송을 위함 : controller, service, view 작업)
 	default WebBoardDTO entityToDTO(WebBoardEntity entity) {
 		WebBoardDTO dto = WebBoardDTO.builder()
@@ -59,7 +65,7 @@ public interface WebBoardService {
 	
 	// 동적 SQL 생성
 	// t : title / c : content / w : writer / tc : title, content / tcw : title, content, writer
-	public default Predicate makePredicate(String type, String keyword) {
+	public default Predicate makePredicate(String type, String keyword) { // makePredicate : 어떤 칼럼이 오면 해당 키를 이용하여 쿼리 조회
 		BooleanBuilder builder = new BooleanBuilder();
 		
 		QWebBoardEntity board = QWebBoardEntity.webBoardEntity;

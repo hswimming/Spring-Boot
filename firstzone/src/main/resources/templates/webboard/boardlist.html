@@ -8,7 +8,29 @@
 <th:block th:replace="~{/layout/basicLayout :: setContent(~{this::contentName} )}">
 <th:block th:fragment="contentName">
 	<h1>board list</h1>
+	<!-- 조건추가 -->
+	<form action="/webboard/list" method="get" id="searchForm">
+		<div class="input-group">
+			<input type="hidden" name="page" value="1">
+			<input type="hidden" name="size" th:value="${pageRequestDTO.size}">
 
+			<div class="input-group-prepend">
+				<select class="custom-select" name="type">
+					<option value="t" th:selected="${pageRequestDTO.type=='t'}">제목</option>
+					<option value="c" th:selected="${pageRequestDTO.type=='c'}">내용</option>
+					<option value="w" th:selected="${pageRequestDTO.type=='w'}">작성자</option>
+					<option value="tc" th:selected="${pageRequestDTO.type=='tc'}">제목 + 내용</option>
+					<option value="tcw" th:selected="${pageRequestDTO.type=='tcw'}">제목 + 내용 + 작성자</option>
+				</select>
+				<input class="form-control" name="keyword" th:value="${pageRequestDTO.keyword}" />
+			</div>
+			<div class="input-group-prepend" id="button-addon4">
+				<button type="submit" class="btn btn-outline-secondary btn-search">Search</button>
+				<button type="reset" class="btn btn-outline-secondary btn-clear">Clear</button>
+			</div>
+		</div>
+	</form>
+	
 	<!-- Data display -->
 	<table class="table table-striped">
 		<thead>
@@ -24,7 +46,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			<tr th:each="dto:${blist}">
+			<tr th:each="dto:${result.dtoList}">
 				<th scope="row">
 					<a th:href="@{/webboard/detail(bno=${dto.bno})}">[[${dto.bno}]]</a>
 				</th>
@@ -38,6 +60,29 @@
 			</tr>
 		</tbody>
 	</table>
+	
+	<!-- 페이징 처리 -->
+	<ul class="pagination h-100 justify-content-center align-items-center">
+	<!-- 이전 페이지 -->
+		<li class="page-item" th:if="${result.prev}">
+			<a class="page-link" th:href="@{/webboard/list(page=${result.start-1})}" tabindex="-1">Previos</a>
+		</li>
+		<li class=" 'page-item ' + ${result.page==page?'active':''}"th:each="page:${result.pageList}">
+			<a class="page-link"
+			th:href="@{/webboard/list(page=${page},size=${pageRequestDTO.size},type=${pageRequestDTO.type},keyword=${pageRequestDTO.keyword})}"
+			tabindex="-1">[[${page}]]</a>
+		</li>
+		<!-- 다음 페이지 -->
+		<li class="page-item" th:if="${result.next}">
+			<a class="page-link" th:href="@{/webboard/list(page=${result.end+1})}">Next</a>
+		</li>
+	</ul>
+	
+	<script th:inline="javascript">
+		var msg = /*[[${msg}]]*/ "";
+		
+		if (msg !== null && msg !== "") alert(msg);
+	</script>
 </th:block>
 </th:block>
 </body>

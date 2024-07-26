@@ -3,6 +3,7 @@ package com.shinhan.firstzone.vo4;
 import java.sql.Timestamp;
 import java.util.List;
 
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -40,7 +41,7 @@ public class WebBoardEntity {
 	private String title;
 	
 	@ManyToOne // 하나의 멤버가 여러개의 board 작성 가능 (연관 관계 작성 필수)
-	private MemberEntity writer; // 로그인 유저만 작성 가능
+	private MemberEntity writer; // writer_mid, 로그인 유저만 작성 가능
 	private String content;
 	
 	@CreationTimestamp // insert 시 자동 생성
@@ -49,6 +50,7 @@ public class WebBoardEntity {
 	@UpdateTimestamp // insert, update 시 자동 생성
 	private Timestamp updatedate;
 	
+	@BatchSize(size = 100)
 	@OneToMany(mappedBy = "board", // 부모인데 자식에게 매여있음
 						cascade = CascadeType.ALL, // 모든 전의
 						fetch = FetchType.EAGER) // EAGER : 즉시 로딩 / LAZY : 지연 로딩

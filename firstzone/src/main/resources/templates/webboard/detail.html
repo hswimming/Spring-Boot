@@ -39,16 +39,190 @@
 			<input type="text" class="form-control" th:value="${board.updatedate}" readonly/>
 		</div>
 		<button type="submit" class="btn btn-primary btnModify">수정</button>
+		<button type="button" class="btn btn-primary btnDelete">삭제</button>
 	</form>
-	<button type="button" class="btn btn-primary btnDelete">삭제</button>
 	
+	<!-- 댓글 추가 -->
+	<div>
+		<div class="mt-4">
+			<h5>
+				<button type="button" class="btn btn-primary">
+					<span class="badge badge-secondary addReply">Add Reply</span>
+				</button>
+			</h5>
+			<h5>
+				<button type="button" class="btn btn-primary">
+					<span class="badge badge-secondary replyCount">Reply Count : [[${board.replyCount}]]</span>
+				</button>
+			</h5>
+		</div>
+		<div class="list-group replyList"></div>
+	</div>
+
+	<!-- Modal : 댓글 추가 및 상세보기 이용 예정 -->
+	<div class="modal" tabindex="-1" role="dialog">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">등록/수정</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<input class="form-control" type="text" name="replyText" placeholder="댓글" />
+						<input class="form-control" type="text" name="replyer" placeholder="작성자" />
+						<input type="hidden" name="rno">
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-warning repltModify">수정</button>
+					<button type="button" class="btn btn-primary replySave">입력</button>
+					<button type="button" class="btn btn-danger replyRemove">삭제</button>
+					<button type="button" class="btn btn-outline-secondary replyClose" data-dismiss="modal">Close</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<script th:inline="javascript">
+		var boardBno = /*[[${board.bno}]]*/ 0;
+	
 		$(".btnDelete").click(f_delete);
+		$(".addReply").click(f_open);
+		$(".close, .replyClose").click(f_close);
+		// $("[data-dismiss]").click(f_close);
+		$(".replySave").click(f_insertReply);
+		$(".replyCount").click(f_selectReply);
+		$(".replyList").on("click", ".card-body", f_replyModify);
+		$(".repltModify").on("click", f_replyModifyDB);
+		$(".replyRemove").on("click", f_replyDelete);
 		
-		function f_delete() {
+		function f_replyDelete() {
+			var rno = $("input[name='rno']").val();
+			
+			$.ajax({
+				url : "/replies/delete/" + rno,
+				method : "DELETE",
+				success : function(responseData) {
+					if (responseData == "success") {
+						alert("댓글이 삭제되었습니다");
+						
+						$(".modal").hide();
+						f_selectReply(); // 수정 된 댓글 다시 조회
+					}
+				}
+			});
+		}
+		
+		function f_replyModifyDB() {
+			var rno = $("input[name='rno']").val();
+			var reply = $('input[name="replyText"]').val();
+			var replyer = $('input[name="replyer"]').val();
+			var replyDTO = {rno, reply, replyer, boardBno}; // 키, 값 이름 같으면 생략 가능
+			
+			$.ajax({
+				url : "/replies/modify",
+				method : "PUT",
+				data : JSON.stringify(replyDTO),
+				contentType : "application/json",
+				success : function(responseData) {
+					if (responseData == "success") {
+						alert("댓글이 수정되었습니다");
+						
+						$(".modal").hide();
+						f_selectReply(); // 수정 된 댓글 다시 조회
+					}
+				}
+			});
+		}
+		
+		function f_replyModify() {
+			// data- : data 중에 얻어라
+			$("input[name='rno']").val($(this).data("rno"));
+			$('input[name="replyText"]').val($(this).find(".card-title").html());
+			$('input[name="replyer"]').val($(this).find(".card-subtitle").html());
+			
+			$(".modal-footer button").hide();
+			$(".repltModify, .replyRemove, .replyClose").show();
+			$(".modal").show();
+		}
+		
+		function f_selectReply() {
+			// 주소, 다녀온 후 수행 할 함수
+			$.getJSON("/replies/list/" + boardBno, f_dataDisplay);
+		}
+		
+		function f_formatDate(str) {
+			var date = new Date(str);
+			
+			// getMonth() : 0월 부터 시작
+			return date.getFullYear() + "/" + (date.getMonth() + 1) + "/" 
+				 + date.getDate() + " " + date.getHours() + " : " + date.getMinutes();
+		}
+		
+		function f_dataDisplay(replyList) {
+			console.log(replyList);
+			
+			var output = '';
+			$(".replyCount").html("Reply Count : " + replyList.length);
+			
+			$.each(replyList, function(index, reply) {
+				var dt = f_formatDate(reply.regdate);
+				var dt2 = f_formatDate(reply.updatedate);
+				
+				output += 
+					`<div class='card card-body' data-rno='${reply.rno}' style="width: 18rem;">
+						<b>${reply.rno}</b>
+						<h5 class='card-title'>${reply.reply}</h5>
+						<h5 class='card-subtitle mb-2 text-muted'>${reply.replyer}</h5>
+						<p class='card-text mb-2 text-muted'> ${dt} </p>
+						<p class='card-text mb-2 text-muted'> ${dt2} </p>
+					</div>`;
+			});
+			
+			$(".replyList").html(output);
+		}
+		
+		function f_insertReply() {
+			var reply = $('input[name="replyText"]').val();
+			var replyer = $('input[name="replyer"]').val();
+			var replyDTO = {reply, replyer, boardBno}; // 키, 값 이름 같으면 생략 가능
+			// var replyDTO = {reply : "reply", replyer : "replyer", boardBno : "boardBno"};
+			
+			$.ajax({
+				url : "/replies/register",
+				method : "POST",
+				data : JSON.stringify(replyDTO), // 객체를 문자로 변경
+				contentType : "application/json;charset=UTF-8", // 보내는 Data
+				success : function(responseData) {
+					alert(responseData + "번 댓글이 등록되었습니다.");
+					
+					f_close(); // 모달 닫기
+					f_selectReply(); // 댓글이 새로 입력 됐으므로 다시 댓글 조회
+				}
+			});
+		}
+		
+		function f_close() {
+			$(".modal").hide();
+		}
+		
+		function f_open() {
+			$(".modal").show();
+			$(".modal-footer button").hide();
+			$(".replySave, .replyClose").show();
+			$('input[name="replyText"]').val("");
+			$('input[name="replyer"]').val("");
+		}
+		
+		function f_delete(event) {
+			event.preventDefault();
+			
 			// form 전체가 넘어가서 bno 따로 생성하지 않아도 됨
 			var formObj = $("form");
-			
+
 			formObj.attr("action", "delete");
 			formObj.attr("method", "post");
 			formObj.submit();
