@@ -7,6 +7,9 @@
 <body>
 <th:block th:replace="~{/layout/basicLayout :: setContent(~{this::contentName} )}">
 <th:block th:fragment="contentName">
+	<input type="text" id="_csrf" name="_csrf" th:value="${_csrf.token}"/>
+	<input type="text" id="_csrf_header" name="_csrf_header" th:content="${_csrf.headerName}"/>
+
 	<h1>게시글 상세보기</h1>
 
 	<form th:action="@{/webboard/modify}" th:method="post">
@@ -99,10 +102,26 @@
 		$(".repltModify").on("click", f_replyModifyDB);
 		$(".replyRemove").on("click", f_replyDelete);
 		
+		var token = $("meta[name='_csrf']").attr("content");
+		var header = $("meta[name='_csrf_header']").attr("content");
+		var beforeSend = function(xhr) {
+			xhr.setRequestHeader(header, token);
+		}
+		
+		// getJson 사용할 때 미리 header, token 보내기
+		function ajax_send() {
+			if(token && header) {
+				$(document).ajaxSend(function(event, xhr, options) {
+					xhr.setRequestHeader(header, token);
+				});
+			}
+		}
+		
 		function f_replyDelete() {
 			var rno = $("input[name='rno']").val();
 			
 			$.ajax({
+				beforeSend, // ajax 통신에 같이 보내기
 				url : "/replies/delete/" + rno,
 				method : "DELETE",
 				success : function(responseData) {
@@ -123,6 +142,7 @@
 			var replyDTO = {rno, reply, replyer, boardBno}; // 키, 값 이름 같으면 생략 가능
 			
 			$.ajax({
+				beforeSend, // ajax 통신에 같이 보내기
 				url : "/replies/modify",
 				method : "PUT",
 				data : JSON.stringify(replyDTO),
@@ -150,6 +170,8 @@
 		}
 		
 		function f_selectReply() {
+			ajax_send();
+			
 			// 주소, 다녀온 후 수행 할 함수
 			$.getJSON("/replies/list/" + boardBno, f_dataDisplay);
 		}
@@ -192,6 +214,7 @@
 			// var replyDTO = {reply : "reply", replyer : "replyer", boardBno : "boardBno"};
 			
 			$.ajax({
+				beforeSend,
 				url : "/replies/register",
 				method : "POST",
 				data : JSON.stringify(replyDTO), // 객체를 문자로 변경

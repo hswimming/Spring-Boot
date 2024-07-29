@@ -25,8 +25,8 @@ public class LoggingAdvice  {
 	// @Pointcut("execution(* select*(..))")
 	@Pointcut("within(com.shinhan.firstzone.controller2.WebBoardController)")
 	public void aa() {}
-	// 메서드 이름은 상관없음, 메서드 형태를 만들고 @Pointcut 작성
 	
+	// 메서드 이름은 상관없음, 메서드 형태를 만들고 @Pointcut 작성
 	@AfterReturning("aa()")
 	public void f3(JoinPoint jp) {
 		System.out.println("AfterReturning : " + jp.getSignature().getName());

@@ -14,8 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.shinhan.firstzone.service2.WebReplyService;
 import com.shinhan.firstzone.vo4.WebReplyDTO;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
+@Tag(name = "댓글", description = "여기에서는 WebReply CRUD 작성됨")
 @RequiredArgsConstructor // final인 field를 @Autowired
 @RequestMapping("/replies")
 @RestController
@@ -25,8 +27,8 @@ public class WebReplyRestController {
 
 	final WebReplyService replyService;
 	
-	// 특정 board의 댓글들 조회
-	@GetMapping("/list/{bno}")
+	@Tag(name = "댓글 목록", description = "댓글 조회")
+	@GetMapping("/list/{bno}") // 특정 board의 댓글들 조회
 	List<WebReplyDTO> list(@PathVariable("bno") Long bno) {
 		return replyService.getList(bno);
 	}

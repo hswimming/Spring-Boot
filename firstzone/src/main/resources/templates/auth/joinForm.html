@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" >
+<head>
+<title>회원가입</title>
+ 
+</head>
+<body>
+		<div class="panel-body">
+			<h2>회원가입</h2>
+			<form method="post" action="joinProc">
+				<p><label for="mid">mid</label> 
+				   <input type="text" id="mid" name="mid" value=""/>
+				</p>
+				<p><label for="mname">mname</label>
+				   <input type="text" id="mname" name="mname" value=""/>
+				</p>	
+				<p><label for="mpassword">mpassword</label> 
+					<input type="password"  id="mpassword" name="mpassword" value="" />
+				</p>					
+				 <p>				
+					<input type="radio"	name="mrole"  value="ADMIN" />ADMIN
+					<input type="radio"	name="mrole"  value="MANAGER" />MANAGER
+					<input type="radio"	name="mrole"  value="USER" checked="checked" />USER
+				</p>	
+				<button  class="btn">가입</button>
+				<hr/>
+				 
+				 <input type="text" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+				
+			</form>
+		</div>
+</html>

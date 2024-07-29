@@ -1,11 +1,14 @@
 package com.shinhan.firstzone;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.shinhan.firstzone.repository.MemberRepository;
 import com.shinhan.firstzone.repository.ProfileRepository;
@@ -23,6 +26,24 @@ public class ManyToOneTest {
 	
 	@Autowired
 	ProfileRepository pRepo;
+	
+	@Autowired
+	PasswordEncoder passEncoder;
+	
+	// Spring Security는 반드시 비밀번호가 암호화 되어있어야 한다.
+	@Test
+	void makePass() {
+		// user5 (USER), king (MANAGER), admin1 (ADMIN) 암호화
+		List<String> ids = new ArrayList<>();
+		ids.add("user5"); ids.add("king"); ids.add("admin1"); 
+		
+		mRepo.findAllById(ids).forEach(member -> {
+			// member.setMpassword(passEncoder.encode(member.getMpassword()));
+			member.setMpassword(passEncoder.encode(passEncoder.encode("1234")));
+			
+			mRepo.save(member);
+		});
+	}
 	
 	// @Test
 	void getProfileCount() {

@@ -23,6 +23,7 @@
 			<input type="text" class="form-control" name="mid" placeholder="writer입력" />
 		</div>
 		<button type="submit" class="btn btn-primary">입력</button>
+		<input type="text" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 	</form>
 </th:block>
 </th:block>
